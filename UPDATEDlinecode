@@ -1,0 +1,237 @@
+// Define constant that enables math constants like M_PI 
+
+#define _USE_MATH_DEFINES 
+
+  
+
+// Include standard libraries for input/output, vector, random number generation, time, OpenMP and math operations 
+
+#include <iostream> 
+
+#include <vector> 
+
+#include <stdlib.h> 
+
+#include <time.h> 
+
+#include <omp.h> 
+
+#include <cmath> 
+
+  
+
+using namespace std; 
+
+  
+
+int main() 
+
+{ 
+
+    // Initialize variables 
+
+    const int n = 10000000; // Maximum number of elements in the vector 
+
+    double similarity_serial, similarity_parallel, time_serial, time_parallel; 
+
+    vector<double> A(n), B(n), A_norm(n), B_norm(n); 
+
+    double dot_product = 0, norm_A = 0, norm_B = 0; 
+
+    int num_threads = omp_get_max_threads(); // Set the number of threads to maximum available 
+
+  
+
+    // Initialize two large vectors A and B randomly 
+
+    srand(time(NULL)); // Seed for random number generation 
+
+    for(int i = 0; i < n; i++){ 
+
+        A[i] = rand() % 100; 
+
+        B[i] = rand() % 100; 
+
+    } 
+
+  
+
+    // Normalize the vectors in serial 
+
+    for(int i = 0; i < n; i++){ 
+
+        norm_A += pow(A[i], 2); 
+
+        norm_B += pow(B[i], 2); 
+
+    } 
+
+    norm_A = sqrt(norm_A); 
+
+    norm_B = sqrt(norm_B); 
+
+  
+
+    for(int i = 0; i < n; i++){ 
+
+        A_norm[i] = A[i] / norm_A; 
+
+        B_norm[i] = B[i] / norm_B; 
+
+    } 
+
+  
+
+    // Calculate the similarity between A and B in serial 
+
+    for(int i = 0; i < n; i++){ 
+
+        dot_product += A_norm[i] * B_norm[i]; 
+
+    } 
+
+    similarity_serial = dot_product; 
+
+   
+
+  
+
+    // Calculate the similarity between A and B in parallel for 2 threads 
+
+    dot_product = 0; 
+
+    omp_set_num_threads(2); // Set number of threads to 2 
+
+    double start_time = omp_get_wtime(); 
+
+    #pragma omp parallel for reduction(+:dot_product) 
+
+    for(int i = 0; i < n; i++){ 
+
+        dot_product += A_norm[i] * B_norm[i]; 
+
+    } 
+
+    double end_time = omp_get_wtime(); 
+
+    similarity_parallel = dot_product; 
+
+    time_parallel = end_time - start_time; 
+
+    cout << "Similarity (parallel, 2 threads): " << similarity_parallel << endl; 
+
+    cout << "Execution time (parallel, 2 threads): " << time_parallel << endl; 
+
+  
+
+    // Calculate the similarity between A and B in parallel for 4 threads 
+
+    dot_product = 0; 
+
+    omp_set_num_threads(4); // Set number of threads to 4 
+
+    start_time = omp_get_wtime(); 
+
+    #pragma omp parallel for reduction(+:dot_product) 
+
+    for(int i = 0; i < n; i++){ 
+
+        dot_product += A_norm[i] * B_norm[i]; 
+
+    } 
+
+    end_time = omp_get_wtime(); 
+
+    similarity_parallel = dot_product; 
+
+    time_parallel = end_time - start_time; 
+
+    cout << "Similarity (parallel, 4 threads): " << similarity_parallel << endl; 
+
+    cout << "Execution time (parallel, 4 threads): " << time_parallel << endl; 
+
+  
+
+    // Calculate the similarity between A and B in parallel for 8 threads 
+
+    dot_product = 0; 
+
+    omp_set_num_threads(8); // Set number of threads to 8 
+
+    
+
+   start_time = omp_get_wtime(); 
+
+    #pragma omp parallel for reduction(+:dot_product) 
+
+    for(int i = 0; i < n; i++){ 
+
+        dot_product += A_norm[i] * B_norm[i]; 
+
+    } 
+
+    end_time = omp_get_wtime(); 
+
+    similarity_parallel = dot_product; 
+
+    time_parallel = end_time - start_time; 
+
+    cout << "Similarity (parallel, 8 threads): " << similarity_parallel << endl; 
+
+    cout << "Execution time (parallel, 8 threads): " << time_parallel << endl; 
+
+  
+
+    // Calculate the similarity between A and B in parallel for 1 threads 
+
+    dot_product = 0; 
+
+    omp_set_num_threads(1); // Set number of threads to 1 
+
+  
+
+   start_time = omp_get_wtime(); 
+
+    #pragma omp parallel for reduction(+:dot_product) 
+
+    for(int i = 0; i < n; i++){ 
+
+        dot_product += A_norm[i] * B_norm[i]; 
+
+    } 
+
+    end_time = omp_get_wtime(); 
+
+    similarity_parallel = dot_product; 
+
+    time_parallel = end_time - start_time; 
+
+    cout << "Similarity (parallel, 1 threads): " << similarity_parallel << endl; 
+
+    cout << "Execution time (parallel, 1 threads): " << time_parallel << endl; 
+
+    cout << "Similarity (parallel): " << similarity_parallel << endl; 
+
+    cout << "Execution time (parallel): " << time_parallel << endl; 
+
+    cout << "Speed-up: " << time_serial/time_parallel << endl; 
+
+     
+
+    // Print results 
+
+    cout << "Similarity (serial): " << similarity_serial << endl; 
+
+    cout << "Execution time (serial): " << time_serial << endl; 
+
+    cout << "Number of threads: " << num_threads << endl; 
+
+  
+
+  
+
+  
+
+    return 0; 
+
+} 
