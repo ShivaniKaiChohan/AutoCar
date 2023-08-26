@@ -1,0 +1,383 @@
+#include <iostream> 
+
+ 
+
+#include <vector> 
+
+ 
+
+#include <chrono> // for measuring execution time 
+
+ 
+
+#include <thread> // for creating threads 
+
+ 
+
+#include <cmath> // for calculating square root 
+
+ 
+
+  
+
+ 
+
+Using namespace std; 
+
+ 
+
+  
+
+ 
+
+//Creating the two vectors A and B 
+
+ 
+
+Void initialization(vector<double>& A, vector<double>& B) { 
+
+ 
+
+    // Fill vector A with ones 
+
+ 
+
+    For (int i = 0; i < A.size(); i++) { 
+
+ 
+
+        A[i] = 1; 
+
+ 
+
+    } 
+
+ 
+
+    // Fill vector B with twos 
+
+ 
+
+    For (int i = 0; i < B.size(); i++) { 
+
+ 
+
+        B[i] = 2; 
+
+ 
+
+    } 
+
+ 
+
+} 
+
+ 
+
+  
+
+ 
+
+  
+
+ 
+
+// Normalize a vector 
+
+ 
+
+//x normalized = (x – x minimum) / (x maximum – x minimum)  
+
+ 
+
+Void normalization(vector<double>& v) { 
+
+ 
+
+    Double mag = 0; 
+
+ 
+
+    Double norm = 0; 
+
+ 
+
+  
+
+ 
+
+    // Calculate mag 
+
+ 
+
+    For (int i = 0; i < v.size(); i++) { 
+
+ 
+
+        Mag += v[i] * v[i]; 
+
+ 
+
+    } 
+
+ 
+
+    Norm = sqrt(mag); // Calculate square root of the sum of squares 
+
+ 
+
+  
+
+ 
+
+    // Normalize vector 
+
+ 
+
+    For (int i = 0; i < v.size(); i++) { 
+
+ 
+
+        V[i] /= norm; 
+
+ 
+
+    } 
+
+ 
+
+} 
+
+ 
+
+  
+
+ 
+
+// Calculate similarity between vectors A and B using num_threads threads 
+
+ 
+
+Double similarity(vector<double>& A, vector<double>& B, int num_threads) { 
+
+ 
+
+    Double result = 0; 
+
+ 
+
+  
+
+ 
+
+    // Calculate similarity in parallel using num_threads threads 
+
+ 
+
+    Int chunk_size = A.size() / num_threads; // Divide work into chunks for each thread 
+
+ 
+
+    Vector<thread> threads(num_threads); // Create vector of threads 
+
+ 
+
+    Vector<double> partial_results(num_threads); // Create vector for storing partial results 
+
+ 
+
+  
+
+ 
+
+    // Start each thread 
+
+ 
+
+    For (int i = 0; i < num_threads; i++) { 
+
+ 
+
+        Threads[i] = thread([=, &A, &B, &partial_results]() { 
+
+ 
+
+            Double partial_result = 0; 
+
+ 
+
+            For (int j = i * chunk_size; j < (i + 1) * chunk_size; j++) { 
+
+ 
+
+                Partial_result += A[j] * B[j]; // Calculate partial result for this chunk 
+
+ 
+
+            } 
+
+ 
+
+            Partial_results[i] = partial_result; // Store partial result 
+
+ 
+
+        }); 
+
+ 
+
+    } 
+
+ 
+
+  
+
+ 
+
+    // Wait for all threads to finish and combine results 
+
+ 
+
+    For (int i = 0; i < num_threads; i++) { 
+
+ 
+
+        Threads[i].join(); // Wait for thread to finish 
+
+ 
+
+        Result += partial_results[i]; // Add partial result to total result 
+
+ 
+
+    } 
+
+ 
+
+  
+
+ 
+
+    Return result; 
+
+ 
+
+} 
+
+ 
+
+  
+
+ 
+
+Int main() { 
+
+ 
+
+    Const int N = 10000000; // Maximum number of elements in the vectors 
+
+ 
+
+    Vector<double> A(N); 
+
+ 
+
+    Vector<double> B(N); 
+
+ 
+
+  
+
+ 
+
+    // Initialize vectors A and B 
+
+ 
+
+    Initialization(A, B); 
+
+ 
+
+  
+
+ 
+
+    // Normalize vectors A and B 
+
+ 
+
+    Normalization(A); 
+
+ 
+
+    Normalization(B); 
+
+ 
+
+  
+
+ 
+
+    // Calculate similarity between A and B with 1, 2, 4, and 8 threads 
+
+ 
+
+    For (int i = 1; i <= 8; i *= 2) { 
+
+ 
+
+        Auto start_time = chrono::high_resolution_clock::now(); // Start measuring execution time 
+
+ 
+
+        Double similarity = similarity(A, B, i); // Calculate similarity with i threads 
+
+ 
+
+        Auto end_time = chrono::high_resolution_clock::now(); // Stop measuring execution time 
+
+ 
+
+        Auto duration = chrono::duration_cast<chrono::milliseconds>(end_time – start_time); // Calculate execution time 
+
+ 
+
+  
+
+ 
+
+        Cout << “Similarity with “ << i << “ threads: “ << similarity << endl; 
+
+ 
+
+        Cout << “Execution time with “ << i << “ threads: “ << duration.count() << “ ms” << endl; 
+
+ 
+
+    } 
+
+ 
+
+  
+
+ 
+
+    Return 0; 
+
+ 
+
+} 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
